@@ -24,8 +24,7 @@ class Parser:
         if not self.previous_token or not self.current_token:
             return
 
-        # TODO: remove check for prev token in keys
-        if self.previous_token.type in VALID_NEXT_TOKENS.keys() and self.current_token.type not in VALID_NEXT_TOKENS[self.previous_token.type]:
+        if self.current_token.type not in VALID_NEXT_TOKENS[self.previous_token.type]:
             raise TypeError(
                 f"{self.current_token} is not expeted after {self.previous_token}")
 
