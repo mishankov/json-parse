@@ -1,6 +1,6 @@
 """
 [x] Token should have information about its position
-[ ] Lexer errors with positions
+[x] Lexer errors with positions
 [ ] Parsing validation
     [ ] Do not ignore commas and colons
 """
@@ -54,6 +54,10 @@ class Token:
             case _:
                 raise TypeError(
                     f"Token __repr__ not implemented for {(self.value, self.start_position == self.end_position)}")
+
+
+class UnexpectedToken(Exception):
+    pass
 
 
 class Lexer:
@@ -123,8 +127,8 @@ class Lexer:
                 tokens.append(self.make_boolean())
 
             else:
-                raise NotImplementedError(
-                    f"Not implemented for {self.current_char}")
+                raise UnexpectedToken(
+                    f"Unexpected token '{self.current_char}' at {self.position}")
 
             self.advance()
 
