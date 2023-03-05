@@ -13,24 +13,26 @@ class TokenType(Enum):
     STRING = "STRING"
     NUMBER = "NUMBER"
     BOOLEAN = "BOOLEAN"
+    NULL = "NULL"
 
 
 VALID_NEXT_TOKENS = {
     TokenType.LEFT_CURLY_BRACE: [TokenType.RIGHT_CURLY_BRACE, TokenType.STRING],
     TokenType.RIGHT_CURLY_BRACE: [TokenType.COMMA, TokenType.RIGHT_SQUARE_BRACE],
-    TokenType.LEFT_SQUARE_BRACE: [TokenType.STRING, TokenType.BOOLEAN, TokenType.NUMBER, TokenType.LEFT_CURLY_BRACE],
+    TokenType.LEFT_SQUARE_BRACE: [TokenType.STRING, TokenType.BOOLEAN, TokenType.NUMBER, TokenType.NULL, TokenType.LEFT_CURLY_BRACE, TokenType.RIGHT_SQUARE_BRACE, TokenType.LEFT_SQUARE_BRACE],
     TokenType.RIGHT_SQUARE_BRACE: [TokenType.COMMA, TokenType.RIGHT_SQUARE_BRACE, TokenType.RIGHT_CURLY_BRACE],
-    TokenType.COLON: [TokenType.STRING, TokenType.BOOLEAN, TokenType.NUMBER, TokenType.LEFT_SQUARE_BRACE, TokenType.LEFT_CURLY_BRACE],
-    TokenType.COMMA: [TokenType.STRING, TokenType.BOOLEAN, TokenType.NUMBER, TokenType.LEFT_SQUARE_BRACE, TokenType.LEFT_CURLY_BRACE],
+    TokenType.COLON: [TokenType.STRING, TokenType.BOOLEAN, TokenType.NUMBER, TokenType.NULL, TokenType.LEFT_SQUARE_BRACE, TokenType.LEFT_CURLY_BRACE],
+    TokenType.COMMA: [TokenType.STRING, TokenType.BOOLEAN, TokenType.NUMBER, TokenType.NULL, TokenType.LEFT_SQUARE_BRACE, TokenType.LEFT_CURLY_BRACE],
     TokenType.STRING: [TokenType.COLON, TokenType.COMMA, TokenType.RIGHT_SQUARE_BRACE, TokenType.RIGHT_CURLY_BRACE],
     TokenType.NUMBER: [TokenType.COMMA, TokenType.RIGHT_CURLY_BRACE, TokenType.RIGHT_SQUARE_BRACE],
     TokenType.BOOLEAN: [TokenType.COMMA, TokenType.RIGHT_CURLY_BRACE, TokenType.RIGHT_SQUARE_BRACE],
+    TokenType.NULL: [TokenType.COMMA, TokenType.RIGHT_CURLY_BRACE, TokenType.RIGHT_SQUARE_BRACE],
 
 }
 
 
 class Token:
-    def __init__(self, type_: TokenType, start_position: Position, end_position: Position = None, value=None) -> None:
+    def __init__(self, type_: TokenType, start_position: Position, end_position: Position = None, value: str = None) -> None:
         self.type = type_
         self.value = value
         self.start_position = start_position.copy()
@@ -44,6 +46,8 @@ class Token:
                 return f"'{self.type.value}'@{self.start_position}->{self.end_position}"
             case (_, False):
                 return f"'{self.type.value}'@{self.start_position}->{self.end_position}={self.value}"
+            case (_, True):
+                return f"'{self.type.value}'@{self.start_position}={self.value}"
             case _:
                 raise TypeError(
                     f"Token __repr__ not implemented for {(self.value, self.start_position == self.end_position)}")

@@ -42,7 +42,9 @@ class Parser:
             return True if current_token.value == "true" else False
         elif current_token.type == TokenType.NUMBER:
             return float(
-                current_token.value) if "." in current_token.value else int(current_token.value)
+                current_token.value) if "." in current_token.value or "e" in current_token.value.lower() else int(current_token.value)
+        elif current_token.type == TokenType.NULL:
+            return None
 
     def parse_object(self) -> dict:
         result = {}
@@ -64,14 +66,13 @@ class Parser:
                 result[current_key] = self.parse_list()
                 current_key = None
 
-            elif current_key is not None and self.current_token.type in (TokenType.BOOLEAN, TokenType.NUMBER, TokenType.STRING):
+            elif current_key is not None and self.current_token.type in (TokenType.BOOLEAN, TokenType.NUMBER, TokenType.STRING, TokenType.NULL):
                 result[current_key] = self.parse_simple()
                 current_key = None
             elif self.current_token.type == TokenType.STRING:
                 current_key = self.current_token.value
                 self.advance()
             else:
-                print(result, current_key)
                 raise NotImplementedError(
                     f"Not implemented for {self.current_token}")
 
@@ -80,7 +81,7 @@ class Parser:
         self.advance()
         while self.current_token is not None:
 
-            if self.current_token.type in (TokenType.BOOLEAN, TokenType.NUMBER, TokenType.STRING):
+            if self.current_token.type in (TokenType.BOOLEAN, TokenType.NUMBER, TokenType.STRING, TokenType.NULL):
                 result.append(self.parse_simple())
 
             elif self.current_token.type == TokenType.LEFT_CURLY_BRACE:
@@ -103,7 +104,7 @@ class Parser:
             result = self.parse_object()
         elif self.current_token.type == TokenType.LEFT_SQUARE_BRACE:
             result = self.parse_list()
-        elif self.current_token.type in (TokenType.BOOLEAN, TokenType.NUMBER, TokenType.STRING):
+        elif self.current_token.type in (TokenType.BOOLEAN, TokenType.NUMBER, TokenType.STRING, TokenType.NULL):
             result = self.parse_simple()
         else:
             raise InvalidFirstToken(
