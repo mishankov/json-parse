@@ -16,7 +16,16 @@ class TokenType(Enum):
 
 
 VALID_NEXT_TOKENS = {
-    TokenType.LEFT_CURLY_BRACE: [TokenType.RIGHT_CURLY_BRACE, TokenType.STRING]
+    TokenType.LEFT_CURLY_BRACE: [TokenType.RIGHT_CURLY_BRACE, TokenType.STRING],
+    TokenType.RIGHT_CURLY_BRACE: [TokenType.COMMA, TokenType.RIGHT_SQUARE_BRACE],
+    TokenType.LEFT_SQUARE_BRACE: [TokenType.STRING, TokenType.BOOLEAN, TokenType.NUMBER, TokenType.LEFT_CURLY_BRACE],
+    TokenType.RIGHT_SQUARE_BRACE: [TokenType.COMMA, TokenType.RIGHT_SQUARE_BRACE, TokenType.RIGHT_CURLY_BRACE],
+    TokenType.COLON: [TokenType.STRING, TokenType.BOOLEAN, TokenType.NUMBER, TokenType.LEFT_SQUARE_BRACE, TokenType.LEFT_CURLY_BRACE],
+    TokenType.COMMA: [TokenType.STRING, TokenType.BOOLEAN, TokenType.NUMBER, TokenType.LEFT_SQUARE_BRACE, TokenType.LEFT_CURLY_BRACE],
+    TokenType.STRING: [TokenType.COLON, TokenType.COMMA, TokenType.RIGHT_SQUARE_BRACE, TokenType.RIGHT_CURLY_BRACE],
+    TokenType.NUMBER: [TokenType.COMMA, TokenType.RIGHT_CURLY_BRACE, TokenType.RIGHT_SQUARE_BRACE],
+    TokenType.BOOLEAN: [TokenType.COMMA, TokenType.RIGHT_CURLY_BRACE, TokenType.RIGHT_SQUARE_BRACE],
+
 }
 
 

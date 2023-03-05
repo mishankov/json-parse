@@ -8,6 +8,15 @@
         "cpu": "AMD",
         "ram": 32
     },
+    "gaming_consoles": [
+        {
+            "name": "Nintendo",
+            "grade": "A"
+        }, {
+            "name": "PS4",
+            "grade": "A-"
+        }
+    ],
     "noice": true,
     "likes_js": false,
     "address": "country: Russia\ncity: Moscow"

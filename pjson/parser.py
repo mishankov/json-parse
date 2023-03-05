@@ -1,4 +1,4 @@
-from pjson.token import Token, TokenType
+from pjson.token import Token, TokenType, VALID_NEXT_TOKENS
 
 
 class InvalidFirstToken(Exception):
@@ -10,24 +10,36 @@ class Parser:
         self.tokens = tokens
         self.position = -1
         self.current_token: Token = None
+        self.previous_token: Token = None
 
         self.advance()
 
     def advance(self):
+        self.previous_token = self.current_token
+
         self.position += 1
         self.current_token = self.tokens[self.position] if self.position < len(
             self.tokens) else None
 
-    def parse_simple(self) -> str | bool | float | int:
-        if self.current_token.type == TokenType.STRING:
-            return self.current_token.value
-        elif self.current_token.type == TokenType.BOOLEAN:
-            return True if self.current_token.value == "true" else False
-        elif self.current_token.type == TokenType.NUMBER:
-            return float(
-                self.current_token.value) if "." in self.current_token.value else int(self.current_token.value)
+        if not self.previous_token or not self.current_token:
+            return
 
+        # TODO: remove check for prev token in keys
+        if self.previous_token.type in VALID_NEXT_TOKENS.keys() and self.current_token.type not in VALID_NEXT_TOKENS[self.previous_token.type]:
+            raise TypeError(
+                f"{self.current_token} is not expeted after {self.previous_token}")
+
+    def parse_simple(self) -> str | bool | float | int:
+        current_token = self.current_token
         self.advance()
+
+        if current_token.type == TokenType.STRING:
+            return current_token.value
+        elif current_token.type == TokenType.BOOLEAN:
+            return True if current_token.value == "true" else False
+        elif current_token.type == TokenType.NUMBER:
+            return float(
+                current_token.value) if "." in current_token.value else int(current_token.value)
 
     def parse_object(self) -> dict:
         result = {}
@@ -37,7 +49,7 @@ class Parser:
 
         while self.current_token is not None:
             if self.current_token.type in (TokenType.COMMA, TokenType.COLON):
-                pass
+                self.advance()
             elif self.current_token.type == TokenType.LEFT_CURLY_BRACE:
                 result[current_key] = self.parse_object()
                 current_key = None
@@ -54,17 +66,16 @@ class Parser:
                 current_key = None
             elif self.current_token.type == TokenType.STRING:
                 current_key = self.current_token.value
+                self.advance()
             else:
-                print(result)
+                print(result, current_key)
                 raise NotImplementedError(
                     f"Not implemented for {self.current_token}")
 
-            self.advance()
-
     def parse_list(self) -> list:
         result = []
+        self.advance()
         while self.current_token is not None:
-            self.advance()
 
             if self.current_token.type in (TokenType.BOOLEAN, TokenType.NUMBER, TokenType.STRING):
                 result.append(self.parse_simple())
@@ -74,6 +85,9 @@ class Parser:
 
             elif self.current_token.type == TokenType.LEFT_SQUARE_BRACE:
                 result.append(self.parse_list())
+
+            elif self.current_token.type == TokenType.COMMA:
+                self.advance()
 
             elif self.current_token.type == TokenType.RIGHT_SQUARE_BRACE:
                 self.advance()
