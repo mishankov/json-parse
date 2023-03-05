@@ -1,5 +1,5 @@
 """
-[ ] Token should have information about its position
+[x] Token should have information about its position
 [ ] Lexer errors with positions
 [ ] Parsing validation
     [ ] Do not ignore commas and colons
@@ -29,18 +29,31 @@ class Position:
     def copy(self):
         return Position(self.line, self.column)
 
-
-class Token:
-    def __init__(self, type_: TokenType, line: int, column: int, value=None) -> None:
-        self.type = type_
-        self.value = value
-        self.line = line
-        self.column = column
+    def __eq__(self, other: object) -> bool:
+        return self.line == other.line and self.column == other.column
 
     def __repr__(self) -> str:
-        if self.value:
-            return f"{self.type.name}@{self.line}:{self.column}={self.value}"
-        return f"{self.type.name}@{self.line}:{self.column}"
+        return f"{self.line}:{self.column}"
+
+
+class Token:
+    def __init__(self, type_: TokenType, start_position: Position, end_position: Position = None, value=None) -> None:
+        self.type = type_
+        self.value = value
+        self.start_position = start_position.copy()
+        self.end_position = end_position.copy() if end_position else start_position.copy()
+
+    def __repr__(self) -> str:
+        match (self.value, self.start_position == self.end_position):
+            case (None, True):
+                return f"{self.type.name}@{self.start_position}"
+            case (None, False):
+                return f"{self.type.name}@{self.start_position}->{self.end_position}"
+            case (_, False):
+                return f"{self.type.name}@{self.start_position}->{self.end_position}={self.value}"
+            case _:
+                raise TypeError(
+                    f"Token __repr__ not implemented for {(self.value, self.start_position == self.end_position)}")
 
 
 class Lexer:
@@ -81,25 +94,24 @@ class Lexer:
                 pass
 
             elif self.current_char == "{":
-                tokens.append(Token(TokenType.LEFT_CURLY_BRACE,
-                              self.position.line, self.position.column))
+                tokens.append(Token(TokenType.LEFT_CURLY_BRACE, self.position))
             elif self.current_char == "}":
-                tokens.append(Token(TokenType.RIGHT_CURLY_BRACE,
-                              self.position.line, self.position.column))
+                tokens.append(
+                    Token(TokenType.RIGHT_CURLY_BRACE, self.position))
 
             elif self.current_char == "[":
-                tokens.append(Token(TokenType.LEFT_SQUARE_BRACE,
-                              self.position.line, self.position.column))
+                tokens.append(
+                    Token(TokenType.LEFT_SQUARE_BRACE, self.position))
             elif self.current_char == "]":
-                tokens.append(Token(TokenType.RIGHT_SQUARE_BRACE,
-                              self.position.line, self.position.column))
+                tokens.append(
+                    Token(TokenType.RIGHT_SQUARE_BRACE, self.position))
 
             elif self.current_char == ":":
                 tokens.append(
-                    Token(TokenType.COLON, self.position.line, self.position.column))
+                    Token(TokenType.COLON, self.position))
             elif self.current_char == ",":
                 tokens.append(
-                    Token(TokenType.COMMA, self.position.line, self.position.column))
+                    Token(TokenType.COMMA, self.position))
 
             elif self.current_char == "\"":
                 tokens.append(self.make_string())
@@ -125,35 +137,37 @@ class Lexer:
 
         while self.current_char is not None:
             if self.current_char == "\"":
-                return Token(TokenType.STRING, start_position.line, start_position.column, value)
+                return Token(TokenType.STRING, start_position, self.position, value)
             else:
                 value += self.current_char
 
             self.advance()
 
-        return Token(TokenType.STRING, self.position.line, self.position.column, value)
+        return Token(TokenType.STRING, start_position, self.position, value)
 
     def make_number(self) -> Token:
         value = ""
+        start_position = self.position.copy()
 
         while self.current_char is not None:
             if self.current_char not in "0123456789.":
                 self.retreat()
-                return Token(TokenType.NUMBER, self.position.line, self.position.column, value)
+                return Token(TokenType.NUMBER, start_position, self.position, value)
             else:
                 value += self.current_char
 
             self.advance()
 
-        return Token(TokenType.NUMBER, self.position.line, self.position.column, value)
+        return Token(TokenType.NUMBER, start_position, self.position, value)
 
     def make_boolean(self) -> Token:
         value = ""
+        start_position = self.position.copy()
 
         while self.current_char is not None:
             value += self.current_char
             if value in ("true", "false"):
-                return Token(TokenType.BOOLEAN, self.position.line, self.position.column, value)
+                return Token(TokenType.BOOLEAN, start_position, self.position, value)
 
             self.advance()
 
