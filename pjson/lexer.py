@@ -116,27 +116,17 @@ class Lexer:
 
     def make_string(self) -> Token:
         value = ""
-        escape_mode = False
         start_position = self.position.copy()
         self.advance()
 
         while self.current_char is not None:
-            if self.current_char == "\\" and not escape_mode:
-                escape_mode = True
-                self.advance()
-
-            if escape_mode and self.current_char == "\\":
-                value += self.current_char
-            elif escape_mode:
-                value += "\\" + self.current_char
-            elif self.current_char == "\"":
+            if self.current_char == "\"":
                 end_position = self.position.copy()
                 self.advance()
                 return Token(TokenType.STRING, start_position, end_position, escape_chars_hack(value))
             else:
                 value += self.current_char
 
-            escape_mode = False
             self.advance()
 
         raise StringNotEndedCorrectly(f"String not ended correctly: {value}")
