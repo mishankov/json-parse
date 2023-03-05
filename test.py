@@ -2,6 +2,7 @@ from os import listdir
 from os.path import isfile, join
 
 import pjson
+import json
 
 test_data_dir_path = "data"
 
@@ -10,15 +11,19 @@ if __name__ == "__main__":
         test_data_dir_path) if isfile(join(test_data_dir_path, f))]
 
     for file_name in file_names:
-        # for file_name in ['y_number_double_close_to_zero.json']:
+        # for file_name in ['y_string_u+2029_par_sep.json']:
         if file_name.startswith("y_"):
             file_content = ""
-            with open(f"{test_data_dir_path}/{file_name}") as f:
+            with open(f"{test_data_dir_path}/{file_name}", encoding="utf-8", mode="r") as f:
                 file_content = f.read()
-
                 try:
                     result = pjson.parse(file_content)
-                    # print(result)
+                    result_native = json.loads(file_content)
+
+                    if result != result_native:
+                        print(f"{test_data_dir_path}/{file_name}",
+                              result, result_native)
+
                 except Exception as e:
                     print(file_name)
                     raise e
