@@ -21,34 +21,57 @@ class TokenType(Enum):
     BOOLEAN = "BOOLEAN"
 
 
+class Position:
+    def __init__(self, line: int, column: int) -> None:
+        self.line = line
+        self.column = column
+
+    def copy(self):
+        return Position(self.line, self.column)
+
+
 class Token:
-    def __init__(self, type_: TokenType, value=None) -> None:
+    def __init__(self, type_: TokenType, line: int, column: int, value=None) -> None:
         self.type = type_
         self.value = value
+        self.line = line
+        self.column = column
 
     def __repr__(self) -> str:
         if self.value:
-            return f"{self.type.name}:{self.value}"
-        return f"{self.type.name}"
+            return f"{self.type.name}@{self.line}:{self.column}={self.value}"
+        return f"{self.type.name}@{self.line}:{self.column}"
 
 
 class Lexer:
     def __init__(self, text: str) -> None:
-        self.text = text
-        self.position = -1
+        self.lines = text.split("\n")
+        self.position = Position(-1, -1)
         self.current_char = None
 
         self.advance()
 
     def advance(self):
-        self.position += 1
-        self.current_char = self.text[self.position] if self.position < len(
-            self.text) else None
+        if self.position.line == -1 and self.position.column == -1:
+            self.position = Position(0, 0)
+        elif self.position.column + 1 < len(self.lines[self.position.line]):
+            self.position.column += 1
+        elif self.position.line + 1 < len(self.lines):
+            self.position.line += 1
+            self.position.column = 0
+        else:
+            self.position = None
+
+        self.current_char = self.lines[self.position.line][self.position.column] if self.position else None
 
     def retreat(self):
-        self.position -= 1
-        self.current_char = self.text[self.position] if self.position < len(
-            self.text) else None
+        if self.position.column > 0:
+            self.position.column -= 1
+        else:
+            self.position.line -= 1
+            self.position.column = len(self.lines[self.position.line]) - 1
+
+        self.current_char = self.lines[self.position.line][self.position.column]
 
     def tokens(self):
         tokens: list[Token] = []
@@ -58,19 +81,25 @@ class Lexer:
                 pass
 
             elif self.current_char == "{":
-                tokens.append(Token(TokenType.LEFT_CURLY_BRACE))
+                tokens.append(Token(TokenType.LEFT_CURLY_BRACE,
+                              self.position.line, self.position.column))
             elif self.current_char == "}":
-                tokens.append(Token(TokenType.RIGHT_CURLY_BRACE))
+                tokens.append(Token(TokenType.RIGHT_CURLY_BRACE,
+                              self.position.line, self.position.column))
 
             elif self.current_char == "[":
-                tokens.append(Token(TokenType.LEFT_SQUARE_BRACE))
+                tokens.append(Token(TokenType.LEFT_SQUARE_BRACE,
+                              self.position.line, self.position.column))
             elif self.current_char == "]":
-                tokens.append(Token(TokenType.RIGHT_SQUARE_BRACE))
+                tokens.append(Token(TokenType.RIGHT_SQUARE_BRACE,
+                              self.position.line, self.position.column))
 
             elif self.current_char == ":":
-                tokens.append(Token(TokenType.COLON))
+                tokens.append(
+                    Token(TokenType.COLON, self.position.line, self.position.column))
             elif self.current_char == ",":
-                tokens.append(Token(TokenType.COMMA))
+                tokens.append(
+                    Token(TokenType.COMMA, self.position.line, self.position.column))
 
             elif self.current_char == "\"":
                 tokens.append(self.make_string())
@@ -91,17 +120,18 @@ class Lexer:
 
     def make_string(self) -> Token:
         value = ""
+        start_position = self.position.copy()
         self.advance()
 
         while self.current_char is not None:
             if self.current_char == "\"":
-                return Token(TokenType.STRING, value)
+                return Token(TokenType.STRING, start_position.line, start_position.column, value)
             else:
                 value += self.current_char
 
             self.advance()
 
-        return Token(TokenType.STRING, value)
+        return Token(TokenType.STRING, self.position.line, self.position.column, value)
 
     def make_number(self) -> Token:
         value = ""
@@ -109,13 +139,13 @@ class Lexer:
         while self.current_char is not None:
             if self.current_char not in "0123456789.":
                 self.retreat()
-                return Token(TokenType.NUMBER, value)
+                return Token(TokenType.NUMBER, self.position.line, self.position.column, value)
             else:
                 value += self.current_char
 
             self.advance()
 
-        return Token(TokenType.NUMBER, value)
+        return Token(TokenType.NUMBER, self.position.line, self.position.column, value)
 
     def make_boolean(self) -> Token:
         value = ""
@@ -123,7 +153,7 @@ class Lexer:
         while self.current_char is not None:
             value += self.current_char
             if value in ("true", "false"):
-                return Token(TokenType.BOOLEAN, value)
+                return Token(TokenType.BOOLEAN, self.position.line, self.position.column, value)
 
             self.advance()
 
@@ -218,4 +248,6 @@ class Parser:
 
 
 def parse(text: str) -> dict:
-    return Parser(Lexer(text).tokens()).parse()
+    tokens = Lexer(text).tokens()
+    print(tokens)
+    return Parser(tokens).parse()
