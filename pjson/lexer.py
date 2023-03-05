@@ -6,12 +6,31 @@ class UnexpectedToken(Exception):
     pass
 
 
+class StringNotEndedCorrectly(Exception):
+    pass
+
+
 DIGITS = "0123456789.-+Ee"
+
+
+def escape_chars_hack(value: str):
+    SYMBOLS = {
+        "\\n": "\n",
+        "\\r": "\r",
+        "\\t": "\t",
+        "\\b": "\b",
+        "\\f": "\f",
+    }
+
+    for _from, to in SYMBOLS.items():
+        value = value.replace(_from, to)
+
+    return value
 
 
 class Lexer:
     def __init__(self, text: str) -> None:
-        self.lines = text.split("\n")
+        self.lines = text.splitlines()
         self.position = Position(-1, -1)
         self.current_char = None
         self.previous_char = None
@@ -97,26 +116,30 @@ class Lexer:
 
     def make_string(self) -> Token:
         value = ""
-        consecutive_backslash_amount = 0
+        escape_mode = False
         start_position = self.position.copy()
         self.advance()
 
         while self.current_char is not None:
-            if self.current_char == "\"" and consecutive_backslash_amount % 2 == 0:
+            if self.current_char == "\\" and not escape_mode:
+                escape_mode = True
+                self.advance()
+
+            if escape_mode and self.current_char == "\\":
+                value += self.current_char
+            elif escape_mode:
+                value += "\\" + self.current_char
+            elif self.current_char == "\"":
                 end_position = self.position.copy()
                 self.advance()
-                return Token(TokenType.STRING, start_position, end_position, value)
+                return Token(TokenType.STRING, start_position, end_position, escape_chars_hack(value))
             else:
                 value += self.current_char
 
-            if self.current_char == "\\":
-                consecutive_backslash_amount += 1
-            else:
-                consecutive_backslash_amount = 0
-
+            escape_mode = False
             self.advance()
 
-        return Token(TokenType.STRING, start_position, self.position, value)
+        raise StringNotEndedCorrectly(f"String not ended correctly: {value}")
 
     def make_number(self) -> Token:
         value = ""

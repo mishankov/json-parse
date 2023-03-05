@@ -33,5 +33,5 @@ if __name__ == "__main__":
                 except Exception as e:
                     continue
 
-                print(file_name, result)
+                print(test_data_dir_path + "/" + file_name, result)
                 break

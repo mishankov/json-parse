@@ -1,1 +1,23 @@
-["\\"]
+{
+    "name": "Denis",
+    "age": 26,
+    "height": 199.9,
+    "knees": ["left", "right"],
+    "pc": {
+        "gpu": "3070Ti",
+        "cpu": "AMD",
+        "ram": 32
+    },
+    "gaming_consoles": [
+        {
+            "name": "Nintendo",
+            "grade": "A"
+        }, {
+            "name": "PS4",
+            "grade": "A-"
+        }
+    ],
+    "noice": true,
+    "likes_js": false,
+    "address": "country: Russia\ncity: Moscow"
+}
