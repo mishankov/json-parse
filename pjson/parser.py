@@ -5,6 +5,10 @@ class InvalidFirstToken(Exception):
     pass
 
 
+class UnexpectedNextToken(Exception):
+    pass
+
+
 class Parser:
     def __init__(self, tokens: list[Token]) -> None:
         self.tokens = tokens
@@ -25,7 +29,7 @@ class Parser:
             return
 
         if self.current_token.type not in VALID_NEXT_TOKENS[self.previous_token.type]:
-            raise TypeError(
+            raise UnexpectedNextToken(
                 f"{self.current_token} is not expeted after {self.previous_token}")
 
     def parse_simple(self) -> str | bool | float | int:

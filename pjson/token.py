@@ -4,12 +4,12 @@ from pjson.position import Position
 
 
 class TokenType(Enum):
-    LEFT_CURLY_BRACE = "LEFT_CURLY_BRACE"
-    RIGHT_CURLY_BRACE = "RIGHT_CURLY_BRACE"
-    LEFT_SQUARE_BRACE = "LEFT_SQUARE_BRACE"
-    RIGHT_SQUARE_BRACE = "RIGHT_SQUARE_BRACE"
-    COLON = "COLON"
-    COMMA = "COMMA"
+    LEFT_CURLY_BRACE = "{"
+    RIGHT_CURLY_BRACE = "}"
+    LEFT_SQUARE_BRACE = "["
+    RIGHT_SQUARE_BRACE = "]"
+    COLON = ":"
+    COMMA = ","
     STRING = "STRING"
     NUMBER = "NUMBER"
     BOOLEAN = "BOOLEAN"
@@ -39,11 +39,11 @@ class Token:
     def __repr__(self) -> str:
         match (self.value, self.start_position == self.end_position):
             case (None, True):
-                return f"{self.type.name}@{self.start_position}"
+                return f"'{self.type.value}'@{self.start_position}"
             case (None, False):
-                return f"{self.type.name}@{self.start_position}->{self.end_position}"
+                return f"'{self.type.value}'@{self.start_position}->{self.end_position}"
             case (_, False):
-                return f"{self.type.name}@{self.start_position}->{self.end_position}={self.value}"
+                return f"'{self.type.value}'@{self.start_position}->{self.end_position}={self.value}"
             case _:
                 raise TypeError(
                     f"Token __repr__ not implemented for {(self.value, self.start_position == self.end_position)}")
