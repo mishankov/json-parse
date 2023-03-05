@@ -13,21 +13,6 @@ class StringNotEndedCorrectly(Exception):
 DIGITS = "0123456789.-+Ee"
 
 
-def escape_chars_hack(value: str):
-    SYMBOLS = {
-        "\\n": "\n",
-        "\\r": "\r",
-        "\\t": "\t",
-        "\\b": "\b",
-        "\\f": "\f",
-    }
-
-    for _from, to in SYMBOLS.items():
-        value = value.replace(_from, to)
-
-    return value
-
-
 class Lexer:
     def __init__(self, text: str) -> None:
         self.lines = text.splitlines()
@@ -123,7 +108,7 @@ class Lexer:
             if self.current_char == "\"":
                 end_position = self.position.copy()
                 self.advance()
-                return Token(TokenType.STRING, start_position, end_position, escape_chars_hack(value))
+                return Token(TokenType.STRING, start_position, end_position, value)
             else:
                 value += self.current_char
 

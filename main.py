@@ -7,7 +7,7 @@ if __name__ == "__main__":
     with open("./patient.json", newline="\n") as file:
         text = file.read()
 
-    print(pjson.parse(text, print_tokens=True))
-    print(json.loads(text))
-    # print(pjson.parse('"\n"', print_tokens=True))
-    # print(json.loads('"\\n"'))
+    # print(pjson.parse(text, print_tokens=True))
+    # print(json.loads(text))
+    print(pjson.parse('"\\n"', print_tokens=True))
+    print(json.loads('"\\n"'))

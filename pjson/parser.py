@@ -9,6 +9,21 @@ class UnexpectedNextToken(Exception):
     pass
 
 
+def escape_chars_hack(value: str):
+    SYMBOLS = {
+        "\\n": "\n",
+        "\\r": "\r",
+        "\\t": "\t",
+        "\\b": "\b",
+        "\\f": "\f",
+    }
+
+    for _from, to in SYMBOLS.items():
+        value = value.replace(_from, to)
+
+    return value
+
+
 class Parser:
     def __init__(self, tokens: list[Token]) -> None:
         self.tokens = tokens
@@ -37,7 +52,7 @@ class Parser:
         self.advance()
 
         if current_token.type == TokenType.STRING:
-            return current_token.value
+            return escape_chars_hack(current_token.value)
         elif current_token.type == TokenType.BOOLEAN:
             return True if current_token.value == "true" else False
         elif current_token.type == TokenType.NUMBER:
