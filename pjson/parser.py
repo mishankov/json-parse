@@ -85,7 +85,7 @@ class Parser:
                 result[current_key] = self.parse_simple()
                 current_key = None
             elif self.current_token.type == TokenType.STRING:
-                current_key = self.current_token.value
+                current_key = escape_chars_hack(self.current_token.value)
                 self.advance()
             else:
                 raise NotImplementedError(

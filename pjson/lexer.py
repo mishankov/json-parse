@@ -101,16 +101,22 @@ class Lexer:
 
     def make_string(self) -> Token:
         value = ""
+        escape_mode = False
         start_position = self.position.copy()
         self.advance()
 
         while self.current_char is not None:
-            if self.current_char == "\"":
+            if self.current_char == "\"" and not escape_mode:
                 end_position = self.position.copy()
                 self.advance()
                 return Token(TokenType.STRING, start_position, end_position, value)
             else:
                 value += self.current_char
+
+            if self.current_char == "\\" and not escape_mode:
+                escape_mode = True
+            else:
+                escape_mode = False
 
             self.advance()
 
