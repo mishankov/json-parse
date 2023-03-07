@@ -47,7 +47,11 @@ type
         endPosition*: Position
         value*: string
 
-proc new_token*(tokenType: TokenType, startPosition: Position,
-        endPosition: Position = startPosition, value: string = ""): Token =
+proc newToken*(tokenType: TokenType, startPosition: Position): Token =
+    return Token(tokenType: tokenType, startPosition: startPosition,
+            endPosition: startPosition)
+
+proc newToken*(tokenType: TokenType, startPosition: Position,
+        endPosition: Position = startPosition, value: string): Token =
     return Token(tokenType: tokenType, startPosition: startPosition,
             endPosition: endPosition, value: value)
